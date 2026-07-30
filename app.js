@@ -89,10 +89,10 @@ fileField?.addEventListener('change', () => {
     return;
   }
 
-  if (file.size > 20 * 1024 * 1024) {
+  if (file.size > 8 * 1024 * 1024) {
     fileField.value = '';
     if (fileLabel) fileLabel.textContent = 'Приложить спецификацию';
-    setStatus('Размер файла превышает 20 МБ.', 'error');
+    setStatus('Размер файла превышает 8 МБ.', 'error');
     return;
   }
 
