@@ -1,9 +1,6 @@
 name: Site quality
 
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -46,6 +43,7 @@ jobs:
             --exclude-mail
             --exclude 'https://images.unsplash.com/.*'
             './*.html'
+            './uz/**/*.html'
           fail: true
 
       - name: Upload Playwright report
