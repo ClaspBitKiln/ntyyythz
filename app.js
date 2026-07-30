@@ -1,26 +1,29 @@
 const form = document.querySelector('#leadForm');
 const statusNode = document.querySelector('#formStatus');
 const submitButton = form?.querySelector('button[type="submit"]');
-const requestField = document.querySelector('#requestField');
 const sourceField = document.querySelector('#sourceField');
+const config = window.MM_CONFIG || {};
 
 function uuid() {
   return globalThis.crypto?.randomUUID?.() || `mm-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-const params = new URLSearchParams(location.search);
-let previous = {};
-try {
-  previous = JSON.parse(localStorage.getItem('mm_attribution') || '{}');
-} catch {
-  previous = {};
+function safeJsonParse(value, fallback) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
 }
 
+const params = new URLSearchParams(location.search);
+const previous = safeJsonParse(localStorage.getItem('mm_attribution') || '{}', {});
 const sessionId = localStorage.getItem('mm_session_id') || uuid();
 localStorage.setItem('mm_session_id', sessionId);
 
 const attribution = {
   sessionId,
+  sourceSystem: config.sourceSystem || 'magicmet-website',
   market: 'RU_CIS',
   utm_source: params.get('utm_source') || previous.utm_source || null,
   utm_medium: params.get('utm_medium') || previous.utm_medium || null,
@@ -40,24 +43,44 @@ const attribution = {
 localStorage.setItem('mm_attribution', JSON.stringify(attribution));
 if (sourceField) sourceField.value = JSON.stringify(attribution);
 
+function sendEventToSaas(payload) {
+  const endpoint = String(config.saasEventEndpoint || '').trim();
+  if (!endpoint) return;
+
+  const body = JSON.stringify(payload);
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(endpoint, new Blob([body], { type: 'application/json' }));
+    return;
+  }
+
+  fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: true
+  }).catch(() => {});
+}
+
 function track(name, data = {}) {
   const payload = {
+    eventId: uuid(),
     name,
     data,
+    sourceSystem: config.sourceSystem || 'magicmet-website',
+    apiVersion: config.apiVersion || null,
     market: attribution.market,
     path: location.pathname,
-    time: new Date().toISOString(),
-    sessionId
+    url: location.href,
+    occurredAt: new Date().toISOString(),
+    sessionId,
+    attribution
   };
 
-  let events = [];
-  try {
-    events = JSON.parse(localStorage.getItem('mm_events') || '[]');
-  } catch {
-    events = [];
-  }
+  const events = safeJsonParse(localStorage.getItem('mm_events') || '[]', []);
   events.push(payload);
   localStorage.setItem('mm_events', JSON.stringify(events.slice(-100)));
+
+  sendEventToSaas(payload);
   window.ym?.(window.MM_METRIKA_ID, 'reachGoal', name, data);
   window.gtag?.('event', name, data);
 }
@@ -74,6 +97,73 @@ function setBusy(isBusy) {
   submitButton.textContent = isBusy ? 'Отправляем…' : 'Отправить заявку';
 }
 
+function buildLeadPayload(formData, externalLeadId, submittedAt) {
+  return {
+    externalLeadId,
+    sourceSystem: config.sourceSystem || 'magicmet-website',
+    apiVersion: config.apiVersion || null,
+    submittedAt,
+    leadType: 'request_to_quote',
+    market: attribution.market,
+    contact: {
+      name: String(formData.get('name') || '').trim(),
+      value: String(formData.get('contact') || '').trim()
+    },
+    request: {
+      text: String(formData.get('request') || '').trim(),
+      pageTitle: document.title,
+      pageUrl: location.href
+    },
+    consent: {
+      personalData: formData.get('consent') === 'on',
+      capturedAt: submittedAt
+    },
+    attribution: { ...attribution, currentPage: location.href },
+    technical: {
+      sessionId,
+      browserLanguage: navigator.language || null,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null
+    }
+  };
+}
+
+async function submitToSaas(payload) {
+  const endpoint = String(config.saasLeadEndpoint || '').trim();
+  if (!endpoint) return { delivered: false, reason: 'not_configured' };
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Idempotency-Key': payload.externalLeadId
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) throw new Error(`SAAS_${response.status}`);
+  return { delivered: true, channel: 'saas' };
+}
+
+async function submitToFallback(formData, payload) {
+  formData.set('form-name', 'lead');
+  formData.set('externalLeadId', payload.externalLeadId);
+  formData.set('submittedAt', payload.submittedAt);
+  formData.set('sourceSystem', payload.sourceSystem);
+  formData.set('source', JSON.stringify(payload.attribution));
+  formData.set('leadPayload', JSON.stringify(payload));
+  formData.set('pageTitle', document.title);
+
+  const response = await fetch(config.formFallbackEndpoint || '/', {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    body: formData
+  });
+
+  if (!response.ok) throw new Error(`FORM_${response.status}`);
+  return { delivered: true, channel: 'fallback' };
+}
+
 track('page_view');
 
 document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
@@ -82,6 +172,12 @@ document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
 
 document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
   link.addEventListener('click', () => track('email_click', { email: link.textContent.trim() }));
+});
+
+document.querySelectorAll('.product-card').forEach((card) => {
+  card.addEventListener('click', () => {
+    track('product_group_view', { productGroup: card.querySelector('h3')?.textContent?.trim() || null });
+  });
 });
 
 form?.addEventListener('focusin', () => track('form_start'), { once: true });
@@ -94,7 +190,9 @@ form?.addEventListener('submit', async (event) => {
   const contact = form.elements.namedItem('contact');
   const request = form.elements.namedItem('request');
   const consent = form.elements.namedItem('consent');
+  const website = form.elements.namedItem('website');
 
+  if (website?.value) return;
   if (!name?.value.trim()) {
     setStatus('Укажите имя.', 'error');
     name?.focus();
@@ -117,35 +215,37 @@ form?.addEventListener('submit', async (event) => {
   }
 
   const formData = new FormData(form);
-  formData.set('form-name', 'lead');
-  formData.set('externalLeadId', uuid());
-  formData.set('submittedAt', new Date().toISOString());
-  formData.set('source', JSON.stringify({ ...attribution, currentPage: location.href }));
-  formData.set('pageTitle', document.title);
+  const externalLeadId = uuid();
+  const submittedAt = new Date().toISOString();
+  const payload = buildLeadPayload(formData, externalLeadId, submittedAt);
 
   setBusy(true);
   setStatus('Отправляем заявку…');
   track('lead_submit', {
-    request: request.value.trim().slice(0, 160)
+    externalLeadId,
+    request: payload.request.text.slice(0, 160)
   });
 
   try {
-    const response = await fetch('/', {
-      method: 'POST',
-      headers: { Accept: 'application/json' },
-      body: formData
-    });
+    let result;
+    try {
+      result = await submitToSaas(payload);
+    } catch (saasError) {
+      console.warn('SaaS submission failed, using fallback', saasError);
+      track('lead_saas_error', { externalLeadId, message: saasError.message });
+      result = { delivered: false, reason: 'saas_error' };
+    }
 
-    if (!response.ok) throw new Error(`FORM_${response.status}`);
+    if (!result.delivered) result = await submitToFallback(formData, payload);
 
     form.reset();
     if (sourceField) sourceField.value = JSON.stringify(attribution);
     setStatus('Заявка отправлена. Менеджер подготовит цену и срок поставки.', 'success');
-    track('lead_success');
+    track('lead_success', { externalLeadId, channel: result.channel });
   } catch (error) {
-    console.warn('Form submission failed', error);
+    console.warn('Lead submission failed', error);
     setStatus('Не удалось отправить заявку. Позвоните по телефону +7 (351) 751-23-35 или напишите на m3@magicmet.ru.', 'error');
-    track('lead_error');
+    track('lead_error', { externalLeadId, message: error.message });
   } finally {
     setBusy(false);
   }
