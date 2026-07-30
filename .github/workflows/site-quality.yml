@@ -1,6 +1,9 @@
 name: Site quality
 
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -9,7 +12,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
 
     steps:
       - name: Checkout
@@ -22,6 +25,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Check JavaScript syntax
+        run: npm run check:js
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -43,6 +49,7 @@ jobs:
             --exclude-mail
             --exclude 'https://images.unsplash.com/.*'
             './*.html'
+            './catalog/**/*.html'
             './uz/**/*.html'
           fail: true
 
