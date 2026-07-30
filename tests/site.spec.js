@@ -88,7 +88,7 @@ test('каталог Узбекистана фильтруется по марк
   await search.fill('редкая позиция по чертежу 777');
   await expect(page.locator('#uzCatalogSearchStatus')).toContainText('готовой карточки нет');
   await page.locator('#uzCatalogNoResult').click();
-  await expect(page.locator('#request [name="request"]')).toContainText('редкая позиция по чертежу 777');
+  await expect(page.locator('#request [name="request"]')).toHaveValue(/редкая позиция по чертежу 777/);
 });
 
 test('узбекская версия страницы открывается', async ({ page }) => {
