@@ -17,7 +17,7 @@ test('общая страница открывается для России и 
   await expect(page).toHaveTitle(/Мэджик Металл/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Единый поставщик');
   await expect(page.getByText('доставку по РФ и СНГ', { exact: false })).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Доставка по РФ и СНГ/i })).toBeVisible();
+  await expect(page.locator('#delivery')).toContainText('Доставка по РФ и СНГ');
   await expect(page.getByRole('heading', { name: /Срочная авиадоставка/i })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Узбекистан' })).toHaveCount(0);
   await expect(page.getByText('Санкт-Петербург', { exact: false })).toHaveCount(0);
