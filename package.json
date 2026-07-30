@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "serve": "serve . -l 4173 --no-clipboard",
-    "validate:html": "html-validate index.html privacy.html",
+    "validate:html": "html-validate \"*.html\" \"uz/**/*.html\"",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lighthouse": "lhci autorun",
