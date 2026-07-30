@@ -14,3 +14,13 @@ window.MM_CONFIG = Object.freeze({
   sourceSystem: 'magicmet-website',
   apiVersion: '2026-07-30'
 });
+
+(() => {
+  const current = document.currentScript;
+  if (!current || document.querySelector('script[data-mm-site-shell]')) return;
+  const shell = document.createElement('script');
+  shell.src = new URL('site-shell.js', current.src).href;
+  shell.defer = true;
+  shell.dataset.mmSiteShell = 'true';
+  document.head.append(shell);
+})();
