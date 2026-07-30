@@ -1,4 +1,11 @@
 (() => {
+  if (location.pathname.endsWith('/uz/catalog.html')) {
+    const catalogStyles = document.createElement('link');
+    catalogStyles.rel = 'stylesheet';
+    catalogStyles.href = '../uz-catalog.css';
+    document.head.appendChild(catalogStyles);
+  }
+
   const forms = [...document.querySelectorAll('.uz-lead-form')];
   const params = new URLSearchParams(location.search);
 
