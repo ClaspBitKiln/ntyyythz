@@ -16,52 +16,92 @@
   status = 200
 
 # На первом этапе для всех стран используется одна общая страница.
-# Временные редиректы сохраняют возможность вернуть региональные версии позднее.
+# Редиректы временные: отдельные версии можно вернуть после запуска.
+[[redirects]]
+  from = "/uz"
+  to = "/"
+  status = 302
 [[redirects]]
   from = "/uz/*"
   to = "/"
   status = 302
 
 [[redirects]]
+  from = "/kz"
+  to = "/"
+  status = 302
+[[redirects]]
   from = "/kz/*"
   to = "/"
   status = 302
 
+[[redirects]]
+  from = "/kg"
+  to = "/"
+  status = 302
 [[redirects]]
   from = "/kg/*"
   to = "/"
   status = 302
 
 [[redirects]]
+  from = "/by"
+  to = "/"
+  status = 302
+[[redirects]]
   from = "/by/*"
   to = "/"
   status = 302
 
+[[redirects]]
+  from = "/az"
+  to = "/"
+  status = 302
 [[redirects]]
   from = "/az/*"
   to = "/"
   status = 302
 
 [[redirects]]
+  from = "/am"
+  to = "/"
+  status = 302
+[[redirects]]
   from = "/am/*"
   to = "/"
   status = 302
 
+[[redirects]]
+  from = "/tm"
+  to = "/"
+  status = 302
 [[redirects]]
   from = "/tm/*"
   to = "/"
   status = 302
 
 [[redirects]]
+  from = "/tj"
+  to = "/"
+  status = 302
+[[redirects]]
   from = "/tj/*"
   to = "/"
   status = 302
 
 [[redirects]]
+  from = "/cis"
+  to = "/"
+  status = 302
+[[redirects]]
   from = "/cis/*"
   to = "/"
   status = 302
 
+[[redirects]]
+  from = "/ru"
+  to = "/"
+  status = 302
 [[redirects]]
   from = "/ru/*"
   to = "/"
