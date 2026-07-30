@@ -48,7 +48,7 @@ test('форма не отправляется без текста заявки'
   await expect(page.locator('#formStatus')).toContainText('Напишите, какая продукция требуется');
 });
 
-test('страница Узбекистана содержит прямое предложение и короткую форму', async ({ page }) => {
+test('страница Узбекистана содержит товарное предложение и короткую форму', async ({ page }) => {
   await page.goto('/uz/');
 
   await expect(page).toHaveTitle(/Узбекистан/);
@@ -57,6 +57,38 @@ test('страница Узбекистана содержит прямое пр
   await expect(page.locator('.uz-lead-form').first().locator('[name="contact"]')).toBeVisible();
   await expect(page.locator('.uz-lead-form').first().locator('[name="request"]')).toBeVisible();
   await expect(page.getByText('Санкт-Петербург', { exact: false })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Отрасли' })).toHaveCount(0);
+});
+
+test('товарные страницы Узбекистана не содержат отраслевой навигации', async ({ page }) => {
+  const paths = [
+    '/uz/truby-besshovnye.html',
+    '/uz/list-i-specstali.html',
+    '/uz/pokovki-krug-zagotovki.html',
+    '/uz/nerzhaveyushchaya-stal.html',
+    '/uz/promyshlennye-komplektuyushchie.html'
+  ];
+
+  for (const path of paths) {
+    await page.goto(path);
+    await expect(page.getByRole('link', { name: 'Отрасли' })).toHaveCount(0);
+    await expect(page.locator('a[href*="otrasli.html"]')).toHaveCount(0);
+  }
+});
+
+test('каталог Узбекистана фильтруется по марке и передаёт отсутствующий запрос в форму', async ({ page }) => {
+  await page.goto('/uz/catalog.html');
+
+  const search = page.locator('#uzCatalogSearch');
+  await expect(search).toBeVisible();
+  await search.fill('12Х1МФ');
+  await expect(page.getByRole('heading', { name: 'Трубы котельные' })).toBeVisible();
+  await expect(page.locator('#uzCatalogSearchStatus')).toContainText('Найдено позиций');
+
+  await search.fill('редкая позиция по чертежу 777');
+  await expect(page.locator('#uzCatalogSearchStatus')).toContainText('готовой карточки нет');
+  await page.locator('#uzCatalogNoResult').click();
+  await expect(page.locator('#request [name="request"]')).toContainText('редкая позиция по чертежу 777');
 });
 
 test('узбекская версия страницы открывается', async ({ page }) => {
