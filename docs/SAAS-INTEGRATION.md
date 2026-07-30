@@ -4,14 +4,15 @@
 
 ## Поток данных
 
-1. Посетитель открывает страницу сайта.
+1. Посетитель открывает главную страницу или каталог.
 2. Сайт создаёт анонимный `sessionId` и сохраняет UTM-метки, referrer и первую страницу входа.
-3. Действия посетителя фиксируются как события воронки: просмотр страницы, просмотр товарной группы, начало формы, звонок, e-mail, отправка заявки.
+3. Действия фиксируются как события воронки: переход в каталог, поиск, фильтр, отсутствие результатов, просмотр или выбор товарной группы, начало формы, звонок и e-mail.
 4. При отправке формы создаётся стабильный `externalLeadId`.
-5. Заявка отправляется в публичный endpoint SaaS.
-6. SaaS создаёт или обновляет лид, сохраняет источник и запускает процесс:
+5. К заявке прикладывается безопасная история текущей сессии: до 30 событий без введённых контактных данных.
+6. Заявка отправляется в публичный endpoint SaaS.
+7. SaaS создаёт или обновляет лид, сохраняет источник и запускает процесс:
    `получил заявку → рассчитал прибыль → сформировал КП → поставил следующее касание`.
-7. Пока endpoint SaaS не настроен, заявка отправляется через Netlify Forms, чтобы сайт не терял обращения.
+8. Пока endpoint SaaS не настроен, заявка отправляется через Netlify Forms, чтобы сайт не терял обращения.
 
 ## Настройка endpoint
 
@@ -45,8 +46,8 @@ window.MM_CONFIG = Object.freeze({
   },
   "request": {
     "text": "Лист 09Г2С 10×1500×6000, 12 тонн, Ташкент",
-    "pageTitle": "...",
-    "pageUrl": "https://www.magicmet.ru/?utm_source=yandex"
+    "pageTitle": "Каталог промышленной продукции — Мэджик Металл",
+    "pageUrl": "https://www.magicmet.ru/catalog/?utm_source=yandex"
   },
   "consent": {
     "personalData": true,
@@ -60,6 +61,29 @@ window.MM_CONFIG = Object.freeze({
     "referrer": "...",
     "landingPage": "...",
     "currentPage": "..."
+  },
+  "journey": {
+    "sessionId": "uuid",
+    "eventCount": 5,
+    "recentEvents": [
+      {
+        "eventId": "uuid",
+        "name": "catalog_search",
+        "occurredAt": "2026-07-30T13:58:00.000Z",
+        "path": "/catalog/",
+        "data": {
+          "query": "09г2с",
+          "category": "Все группы",
+          "resultCount": 2
+        }
+      }
+    ],
+    "intent": {
+      "selectedProductGroups": ["Лист горячекатаный"],
+      "searchQueries": ["09г2с"],
+      "noResultQueries": [],
+      "lastCatalogCategory": "Листовой прокат"
+    }
   }
 }
 ```
@@ -99,11 +123,19 @@ HTTP-статусы:
 Endpoint событий принимает:
 
 - `page_view`;
+- `catalog_navigation_click`;
+- `catalog_landing_filter`;
+- `catalog_search`;
+- `catalog_search_cleared`;
+- `catalog_no_results`;
+- `catalog_filter`;
 - `product_group_view`;
+- `product_group_select`;
 - `form_start`;
 - `phone_click`;
 - `email_click`;
 - `lead_submit`;
+- `lead_saas_error`;
 - `lead_success`;
 - `lead_error`.
 
@@ -123,6 +155,10 @@ Endpoint событий принимает:
 - `market`;
 - `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`;
 - `referrer`, `landing_page`, `current_page`;
+- `selected_product_groups`;
+- `catalog_search_queries`;
+- `catalog_no_result_queries`;
+- `journey_events` или отдельная таблица событий;
 - `status`;
 - `responsible_manager_id`;
 - `next_action_at`;
@@ -141,6 +177,13 @@ Endpoint событий принимает:
 7. `won` — заказ получен;
 8. `lost` — отказ с обязательной причиной.
 
-## Дальнейшее развитие
+## Принципы конфиденциальности
 
-Следующие страницы каталога должны использовать тот же `sessionId`, `externalLeadId`, формат атрибуции и события. Это позволит объединять SEO-трафик, просмотр продукции, расчёт, КП и работу менеджера в одной истории клиента без переделки публичной формы.
+- До формы используется только случайный анонимный `sessionId`.
+- Fingerprinting и попытки определить личность посетителя не применяются.
+- В `journey.recentEvents` не включаются введённые контактные данные и тексты прошлых заявок.
+- История связывается с человеком только после его добровольной отправки формы и согласия на обработку персональных данных.
+
+## Следующее подключение
+
+После готовности SaaS необходимо указать реальные HTTPS endpoints в `site-config.js`, настроить CORS для домена сайта, idempotency, rate limit, серверную валидацию и уведомление ответственного менеджера на `m3@magicmet.ru`.
