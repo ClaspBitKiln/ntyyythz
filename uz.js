@@ -8,6 +8,29 @@
 
   const forms = [...document.querySelectorAll('.uz-lead-form')];
   const params = new URLSearchParams(location.search);
+  const isUzbek = document.documentElement.lang.toLowerCase().startsWith('uz');
+  const language = isUzbek ? 'uz' : 'ru';
+  const messages = isUzbek
+    ? {
+        sending: 'Yuborilmoqda…',
+        submit: 'Ariza yuborish',
+        name: 'Ismingizni kiriting.',
+        contact: 'Telefon yoki e-mailni kiriting.',
+        request: 'Qaysi mahsulot kerakligini yozing.',
+        consent: 'Shaxsiy ma’lumotlarni qayta ishlashga rozilikni tasdiqlang.',
+        success: 'Ariza yuborildi. Menejer narx va yetkazib berish muddatini tayyorlaydi.',
+        error: 'Arizani yuborib bo‘lmadi. m3@magicmet.ru manziliga yozing yoki +7 (351) 751-23-35 raqamiga qo‘ng‘iroq qiling.'
+      }
+    : {
+        sending: 'Отправляем…',
+        submit: 'Отправить заявку',
+        name: 'Укажите имя.',
+        contact: 'Укажите телефон или e-mail.',
+        request: 'Напишите, какая продукция требуется.',
+        consent: 'Подтвердите согласие на обработку персональных данных.',
+        success: 'Заявка отправлена. Менеджер подготовит цену и срок поставки.',
+        error: 'Не удалось отправить заявку. Напишите на m3@magicmet.ru или позвоните +7 (351) 751-23-35.'
+      };
 
   function uuid() {
     return globalThis.crypto?.randomUUID?.() || `mm-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -27,6 +50,7 @@
     sessionId,
     market: 'UZ',
     regionPage: 'Uzbekistan',
+    language,
     utm_source: params.get('utm_source') || previous.utm_source || null,
     utm_medium: params.get('utm_medium') || previous.utm_medium || null,
     utm_campaign: params.get('utm_campaign') || previous.utm_campaign || null,
@@ -51,6 +75,7 @@
       name,
       data,
       market: 'UZ',
+      language,
       path: location.pathname,
       time: new Date().toISOString(),
       sessionId
@@ -105,7 +130,7 @@
     const button = form.querySelector('button[type="submit"]');
     if (!button) return;
     button.disabled = busy;
-    button.textContent = busy ? 'Отправляем…' : 'Отправить заявку';
+    button.textContent = busy ? messages.sending : messages.submit;
   }
 
   forms.forEach((form) => {
@@ -121,22 +146,22 @@
       const consent = form.elements.namedItem('consent');
 
       if (!name?.value.trim()) {
-        setStatus(form, 'Укажите имя.', 'error');
+        setStatus(form, messages.name, 'error');
         name?.focus();
         return;
       }
       if (!contact?.value.trim()) {
-        setStatus(form, 'Укажите телефон или e-mail.', 'error');
+        setStatus(form, messages.contact, 'error');
         contact?.focus();
         return;
       }
       if (!request?.value.trim()) {
-        setStatus(form, 'Напишите, какая продукция требуется.', 'error');
+        setStatus(form, messages.request, 'error');
         request?.focus();
         return;
       }
       if (!consent?.checked) {
-        setStatus(form, 'Подтвердите согласие на обработку персональных данных.', 'error');
+        setStatus(form, messages.consent, 'error');
         consent?.focus();
         return;
       }
@@ -145,11 +170,12 @@
       formData.set('externalLeadId', uuid());
       formData.set('submittedAt', new Date().toISOString());
       formData.set('market', 'UZ');
+      formData.set('language', language);
       formData.set('source', JSON.stringify({ ...attribution, currentPage: location.href }));
       formData.set('pageTitle', document.title);
 
       setBusy(form, true);
-      setStatus(form, 'Отправляем заявку…');
+      setStatus(form, messages.sending);
       track('lead_submit', {
         form: form.getAttribute('name'),
         request: request.value.trim().slice(0, 160)
@@ -167,11 +193,11 @@
         form.querySelectorAll('.js-source').forEach((field) => {
           field.value = JSON.stringify(attribution);
         });
-        setStatus(form, 'Заявка отправлена. Менеджер подготовит цену и срок поставки.', 'success');
+        setStatus(form, messages.success, 'success');
         track('lead_success', { form: form.getAttribute('name') });
       } catch (error) {
         console.warn('Form submission failed', error);
-        setStatus(form, 'Не удалось отправить заявку. Напишите на m3@magicmet.ru или позвоните +7 (351) 751-23-35.', 'error');
+        setStatus(form, messages.error, 'error');
         track('lead_error', { form: form.getAttribute('name') });
       } finally {
         setBusy(form, false);
@@ -179,5 +205,5 @@
     });
   });
 
-  track('page_view', { market: 'UZ' });
+  track('page_view', { market: 'UZ', language });
 })();
