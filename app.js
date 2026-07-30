@@ -1,139 +1,176 @@
-const products=[
-['Листовой прокат','Горячекатаный, холоднокатаный, оцинкованный, рифлёный, ПВЛ, судовой, нержавеющий лист.'],
-['Трубная продукция','Бесшовные, электросварные, профильные, котельные, нефтепроводные, обсадные и нержавеющие трубы.'],
-['Сортовой прокат','Круг, квадрат, полоса, шестигранник, арматура, катанка.'],
-['Фасонный прокат','Балка, швеллер, уголок, рельсы и специальные профили.'],
-['Поковки','Круги, диски, кольца, валы и плиты по ГОСТ, ТУ и чертежам.'],
-['Соединительные детали трубопроводов','Отводы, тройники, переходы, заглушки и фланцы.'],
-['Запорная арматура','Задвижки, шаровые краны, клапаны и затворы.'],
-['Метизы и крепёж','Болты, гайки, шпильки, шайбы и специальный крепёж.'],
-['Сварочные материалы','Электроды, проволока, флюсы и материалы под специальные стали.'],
-['Нержавеющие стали','AISI 304, 316, 321, 201, 12Х18Н10Т и другие марки.'],
-['Жаропрочные и специальные сплавы','12Х1МФ, 15ХМ, ХН78Т и другие специальные марки.'],
-['Цветные металлы','Алюминий, медь, латунь, бронза, титан и сплавы.'],
-['Изоляция труб','ВУС, ППУ и другие покрытия по проекту.'],
-['Промышленное оборудование','Оборудование, узлы и комплектующие по опросному листу.'],
-['Нестандартные изделия','Изготовление по чертежу и техническому заданию заказчика.'],
-['Материалы для ремонта','Позиции для ремонтных программ предприятий и сервисных организаций.']
-];
+const form = document.querySelector('#leadForm');
+const statusNode = document.querySelector('#formStatus');
+const submitButton = form?.querySelector('button[type="submit"]');
+const productField = document.querySelector('#productField');
+const fileField = document.querySelector('#fileField');
+const fileLabel = document.querySelector('#fileLabel');
+const sourceField = document.querySelector('#sourceField');
 
-const grid=document.querySelector('#catalogGrid');
-const search=document.querySelector('#productSearch');
-const productField=document.querySelector('#productField');
-const form=document.querySelector('#leadForm');
-const statusNode=document.querySelector('#formStatus');
-const submitButton=form?.querySelector('button[type="submit"]');
-
-function uuid(){
+function uuid() {
   return globalThis.crypto?.randomUUID?.() || `mm-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function render(items){
-  grid.innerHTML=items.map(([name,desc])=>`<article class="card"><h3>${name}</h3><p>${desc}</p><button type="button" data-product="${name}">Хочу купить →</button></article>`).join('');
+const params = new URLSearchParams(location.search);
+let previous = {};
+try {
+  previous = JSON.parse(localStorage.getItem('mm_attribution') || '{}');
+} catch {
+  previous = {};
 }
-render(products);
 
-search?.addEventListener('input',()=>{
-  const q=search.value.trim().toLowerCase();
-  render(products.filter(p=>p.join(' ').toLowerCase().includes(q)));
-  track('site_search',{query:q});
-});
+const sessionId = localStorage.getItem('mm_session_id') || uuid();
+localStorage.setItem('mm_session_id', sessionId);
 
-document.addEventListener('click',e=>{
-  const button=e.target.closest('[data-product],[data-open-form]');
-  if(!button)return;
-  const product=button.dataset.product||'';
-  if(productField&&product)productField.value=product;
-  document.querySelector('#lead')?.scrollIntoView({behavior:'smooth'});
-  track('want_to_buy_click',{product});
-});
-
-const params=new URLSearchParams(location.search);
-const previous=JSON.parse(localStorage.getItem('mm_attribution')||'{}');
-const sessionId=localStorage.getItem('mm_session_id')||uuid();
-localStorage.setItem('mm_session_id',sessionId);
-const attribution={
+const attribution = {
   sessionId,
-  utm_source:params.get('utm_source')||previous.utm_source||null,
-  utm_medium:params.get('utm_medium')||previous.utm_medium||null,
-  utm_campaign:params.get('utm_campaign')||previous.utm_campaign||null,
-  utm_term:params.get('utm_term')||previous.utm_term||null,
-  utm_content:params.get('utm_content')||previous.utm_content||null,
-  yclid:params.get('yclid')||previous.yclid||null,
-  gclid:params.get('gclid')||previous.gclid||null,
-  referrer:previous.referrer||document.referrer||null,
-  landingPage:previous.landingPage||location.href
+  utm_source: params.get('utm_source') || previous.utm_source || null,
+  utm_medium: params.get('utm_medium') || previous.utm_medium || null,
+  utm_campaign: params.get('utm_campaign') || previous.utm_campaign || null,
+  utm_term: params.get('utm_term') || previous.utm_term || null,
+  utm_content: params.get('utm_content') || previous.utm_content || null,
+  yclid: params.get('yclid') || previous.yclid || null,
+  gclid: params.get('gclid') || previous.gclid || null,
+  referrer: previous.referrer || document.referrer || null,
+  landingPage: previous.landingPage || location.href
 };
-localStorage.setItem('mm_attribution',JSON.stringify(attribution));
-const sourceField=document.querySelector('#sourceField');
-if(sourceField)sourceField.value=JSON.stringify(attribution);
 
-function track(name,data={}){
-  const payload={name,data,path:location.pathname,time:new Date().toISOString(),sessionId};
-  const events=JSON.parse(localStorage.getItem('mm_events')||'[]');
+localStorage.setItem('mm_attribution', JSON.stringify(attribution));
+if (sourceField) sourceField.value = JSON.stringify(attribution);
+
+function track(name, data = {}) {
+  const payload = {
+    name,
+    data,
+    path: location.pathname,
+    time: new Date().toISOString(),
+    sessionId
+  };
+
+  let events = [];
+  try {
+    events = JSON.parse(localStorage.getItem('mm_events') || '[]');
+  } catch {
+    events = [];
+  }
   events.push(payload);
-  localStorage.setItem('mm_events',JSON.stringify(events.slice(-100)));
-  window.ym?.(window.MM_METRIKA_ID,'reachGoal',name,data);
-  window.gtag?.('event',name,data);
+  localStorage.setItem('mm_events', JSON.stringify(events.slice(-100)));
+  window.ym?.(window.MM_METRIKA_ID, 'reachGoal', name, data);
+  window.gtag?.('event', name, data);
+}
+
+function setStatus(message, type = '') {
+  if (!statusNode) return;
+  statusNode.textContent = message;
+  statusNode.className = `form-status field-wide ${type}`.trim();
+}
+
+function setBusy(isBusy) {
+  if (!submitButton) return;
+  submitButton.disabled = isBusy;
+  submitButton.textContent = isBusy ? 'Отправляем…' : 'Отправить заявку';
 }
 
 track('page_view');
-document.querySelectorAll('a[href^="tel:"]').forEach(a=>a.addEventListener('click',()=>track('phone_click',{phone:a.textContent.trim()})));
-form?.addEventListener('focusin',()=>track('form_start'),{once:true});
-form?.querySelector('input[type="file"]')?.addEventListener('change',e=>track('file_upload',{hasFile:Boolean(e.target.files?.length)}));
 
-function setStatus(message,isError=false){
-  if(!statusNode)return;
-  statusNode.textContent=message;
-  statusNode.style.color=isError?'#a40000':'';
-}
+document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
+  link.addEventListener('click', () => track('phone_click', { phone: link.textContent.trim() }));
+});
 
-form?.addEventListener('submit',async(event)=>{
-  event.preventDefault();
-  if(!form.reportValidity())return;
+document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
+  link.addEventListener('click', () => track('email_click', { email: link.textContent.trim() }));
+});
 
-  const formData=new FormData(form);
-  const file=formData.get('file');
-  const externalLeadId=uuid();
-  document.querySelector('#externalLeadId').value=externalLeadId;
-  document.querySelector('#personalDataField').value='true';
-  formData.set('externalLeadId',externalLeadId);
-  formData.set('personalData','true');
+form?.addEventListener('focusin', () => track('form_start'), { once: true });
 
-  // Until the SaaS attachment endpoint is enabled, file requests use Netlify Forms.
-  if(file instanceof File && file.size>0){
-    track('lead_submit',{product:productField?.value||'',channel:'netlify-file'});
-    form.submit();
+fileField?.addEventListener('change', () => {
+  const file = fileField.files?.[0];
+  if (!file) {
+    if (fileLabel) fileLabel.textContent = 'Приложить спецификацию';
     return;
   }
 
-  const payload=Object.fromEntries(formData.entries());
-  payload.attribution=attribution;
-  payload.personalData=true;
-  delete payload.file;
+  if (file.size > 20 * 1024 * 1024) {
+    fileField.value = '';
+    if (fileLabel) fileLabel.textContent = 'Приложить спецификацию';
+    setStatus('Размер файла превышает 20 МБ.', 'error');
+    return;
+  }
 
-  submitButton.disabled=true;
+  if (fileLabel) fileLabel.textContent = file.name;
+  setStatus('');
+  track('file_upload', { extension: file.name.split('.').pop()?.toLowerCase() || '' });
+});
+
+form?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  setStatus('');
+
+  const name = form.elements.namedItem('name');
+  const phone = form.elements.namedItem('phone');
+  const email = form.elements.namedItem('email');
+  const consent = form.elements.namedItem('consent');
+  const file = fileField?.files?.[0];
+  const hasDescription = Boolean(productField?.value.trim());
+
+  if (!name?.value.trim()) {
+    setStatus('Укажите имя.', 'error');
+    name?.focus();
+    return;
+  }
+  if (!phone?.value.trim()) {
+    setStatus('Укажите телефон.', 'error');
+    phone?.focus();
+    return;
+  }
+  if (email?.value && !email.checkValidity()) {
+    setStatus('Проверьте адрес электронной почты.', 'error');
+    email.focus();
+    return;
+  }
+  if (!hasDescription && !file) {
+    setStatus('Напишите, что требуется, или приложите файл.', 'error');
+    productField?.focus();
+    return;
+  }
+  if (!consent?.checked) {
+    setStatus('Подтвердите согласие на обработку персональных данных.', 'error');
+    consent?.focus();
+    return;
+  }
+
+  const formData = new FormData(form);
+  formData.set('form-name', 'lead');
+  formData.set('externalLeadId', uuid());
+  formData.set('submittedAt', new Date().toISOString());
+  formData.set('source', JSON.stringify(attribution));
+
+  setBusy(true);
   setStatus('Отправляем заявку…');
-  track('lead_submit',{product:productField?.value||'',channel:'saas-gateway'});
+  track('lead_submit', {
+    hasFile: Boolean(file),
+    hasDescription,
+    product: productField?.value.trim().slice(0, 120) || ''
+  });
 
-  try{
-    const response=await fetch('/api/leads',{
-      method:'POST',
-      headers:{'content-type':'application/json'},
-      body:JSON.stringify(payload)
+  try {
+    const response = await fetch('/', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData
     });
-    const result=await response.json().catch(()=>({}));
-    if(!response.ok||!result.accepted)throw new Error(result.error||'LEAD_NOT_ACCEPTED');
 
-    track('saas_lead_accepted',{requestId:result.requestId||null,externalLeadId});
+    if (!response.ok) throw new Error(`FORM_${response.status}`);
+
     form.reset();
-    if(sourceField)sourceField.value=JSON.stringify(attribution);
-    setStatus('Заявка принята. Менеджер свяжется с вами в течение рабочего дня.');
-  }catch(error){
-    console.warn('SaaS gateway unavailable, using Netlify Forms fallback',error);
-    setStatus('Сохраняем заявку резервным способом…');
-    form.submit();
-  }finally{
-    submitButton.disabled=false;
+    if (fileLabel) fileLabel.textContent = 'Приложить спецификацию';
+    if (sourceField) sourceField.value = JSON.stringify(attribution);
+    setStatus('Заявка отправлена. Менеджер свяжется с вами в течение рабочего дня.', 'success');
+    track('lead_success');
+  } catch (error) {
+    console.warn('Form submission failed', error);
+    setStatus('Не удалось отправить заявку. Позвоните по телефону +7 (351) 751-23-35 или напишите на m3@magicmet.ru.', 'error');
+    track('lead_error');
+  } finally {
+    setBusy(false);
   }
 });
