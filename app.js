@@ -97,6 +97,63 @@ function setBusy(isBusy) {
   submitButton.textContent = isBusy ? 'Отправляем…' : 'Отправить заявку';
 }
 
+function uniqueValues(values) {
+  return [...new Set(values.filter(Boolean).map((value) => String(value).trim()).filter(Boolean))];
+}
+
+function buildJourneyContext() {
+  const allowedEvents = new Set([
+    'page_view',
+    'catalog_navigation_click',
+    'catalog_landing_filter',
+    'catalog_search',
+    'catalog_search_cleared',
+    'catalog_no_results',
+    'catalog_filter',
+    'product_group_view',
+    'product_group_select',
+    'phone_click',
+    'email_click',
+    'form_start'
+  ]);
+
+  const events = safeJsonParse(localStorage.getItem('mm_events') || '[]', [])
+    .filter((event) => event?.sessionId === sessionId && allowedEvents.has(event?.name))
+    .slice(-30)
+    .map((event) => ({
+      eventId: event.eventId || null,
+      name: event.name,
+      occurredAt: event.occurredAt || event.time || null,
+      path: event.path || null,
+      data: event.data || {}
+    }));
+
+  const selectedProductGroups = uniqueValues(events.flatMap((event) => {
+    if (!['product_group_select', 'product_group_view'].includes(event.name)) return [];
+    return [event.data?.productGroup || event.data?.productGroupId];
+  }));
+
+  const searchQueries = uniqueValues(events.flatMap((event) => (
+    event.name === 'catalog_search' ? [event.data?.query] : []
+  )));
+
+  const noResultQueries = uniqueValues(events.flatMap((event) => (
+    event.name === 'catalog_no_results' ? [event.data?.query] : []
+  )));
+
+  return {
+    sessionId,
+    eventCount: events.length,
+    recentEvents: events,
+    intent: {
+      selectedProductGroups,
+      searchQueries,
+      noResultQueries,
+      lastCatalogCategory: [...events].reverse().find((event) => event.data?.category)?.data?.category || null
+    }
+  };
+}
+
 function buildLeadPayload(formData, externalLeadId, submittedAt) {
   return {
     externalLeadId,
@@ -119,6 +176,7 @@ function buildLeadPayload(formData, externalLeadId, submittedAt) {
       capturedAt: submittedAt
     },
     attribution: { ...attribution, currentPage: location.href },
+    journey: buildJourneyContext(),
     technical: {
       sessionId,
       browserLanguage: navigator.language || null,
@@ -151,6 +209,7 @@ async function submitToFallback(formData, payload) {
   formData.set('submittedAt', payload.submittedAt);
   formData.set('sourceSystem', payload.sourceSystem);
   formData.set('source', JSON.stringify(payload.attribution));
+  formData.set('journey', JSON.stringify(payload.journey));
   formData.set('leadPayload', JSON.stringify(payload));
   formData.set('pageTitle', document.title);
 
@@ -223,7 +282,9 @@ form?.addEventListener('submit', async (event) => {
   setStatus('Отправляем заявку…');
   track('lead_submit', {
     externalLeadId,
-    request: payload.request.text.slice(0, 160)
+    request: payload.request.text.slice(0, 160),
+    selectedProductGroups: payload.journey.intent.selectedProductGroups,
+    searchQueries: payload.journey.intent.searchQueries
   });
 
   try {
