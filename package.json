@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "serve": "serve . -l 4173 --no-clipboard",
-    "validate:html": "html-validate \"*.html\" \"uz/**/*.html\"",
+    "validate:html": "html-validate \"*.html\" \"catalog/**/*.html\" \"uz/**/*.html\"",
+    "check:js": "node --check app.js && node --check site-config.js && node --check site-shell.js && node --check catalog/catalog.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lighthouse": "lhci autorun",
-    "quality": "npm run validate:html && npm run test:e2e && npm run lighthouse"
+    "quality": "npm run check:js && npm run validate:html && npm run test:e2e && npm run lighthouse"
   },
   "devDependencies": {
     "@lhci/cli": "^0.15.1",
