@@ -52,11 +52,14 @@ test('можно отправить заявку только с файлом', 
 });
 
 test('мобильная версия не имеет горизонтальной прокрутки', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+
   const dimensions = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
     clientWidth: document.documentElement.clientWidth
   }));
+
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
   await expect(page.locator('.mobile-actions')).toBeVisible();
 });
