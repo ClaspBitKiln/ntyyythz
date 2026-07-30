@@ -23,6 +23,14 @@ test('общая страница открывается для России и 
   await expect(page.getByText('Санкт-Петербург', { exact: false })).toHaveCount(0);
 });
 
+test('с главной страницы доступен полный каталог', async ({ page }) => {
+  await page.goto('/');
+
+  const catalogLink = page.locator('[data-mm-catalog-link="header"]');
+  await expect(catalogLink).toBeVisible();
+  await expect(catalogLink).toHaveAttribute('href', '/catalog/');
+});
+
 test('форма содержит только три пользовательских поля', async ({ page }) => {
   await page.goto('/#request');
 
@@ -57,6 +65,47 @@ test('форма не отправляется без текста заявки'
   await expect(page.locator('#formStatus')).toContainText('Напишите, какая продукция требуется');
 });
 
+test('каталог содержит 22 товарные группы и фильтруется поиском', async ({ page }) => {
+  await page.goto('/catalog/');
+
+  await expect(page).toHaveTitle(/Каталог промышленной продукции/);
+  await expect(page.locator('.product-card')).toHaveCount(22);
+
+  await page.locator('#catalogSearch').fill('09Г2С');
+  await expect(page.locator('.product-card')).toHaveCount(2);
+  await expect(page.locator('#catalogCount')).toContainText('2');
+
+  await page.waitForTimeout(550);
+  const events = await page.evaluate(() => JSON.parse(localStorage.getItem('mm_events') || '[]'));
+  expect(events.some((event) => event.name === 'catalog_search' && event.data.query === '09г2с')).toBeTruthy();
+});
+
+test('выбор товарной группы переносит контекст в заявку', async ({ page }) => {
+  await page.goto('/catalog/');
+
+  await page.locator('[data-select-product="pipe-seamless-hot"]').click();
+  await expect(page.locator('#requestField')).toHaveValue(/Трубы бесшовные горячедеформированные/);
+  await expect(page.locator('#selectedProduct')).toContainText('Трубы бесшовные горячедеформированные');
+
+  const events = await page.evaluate(() => JSON.parse(localStorage.getItem('mm_events') || '[]'));
+  expect(events.some((event) => event.name === 'product_group_select' && event.data.productGroupId === 'pipe-seamless-hot')).toBeTruthy();
+});
+
+test('заявка из каталога отправляется в ту же воронку', async ({ page }) => {
+  await mockFormSubmission(page);
+  await page.goto('/catalog/#request');
+
+  await page.locator('#leadForm [name="name"]').fill('Каталог Тест');
+  await page.locator('#leadForm [name="contact"]').fill('catalog@example.com');
+  await page.locator('#leadForm [name="request"]').fill('Лист 09Г2С 10 мм, 12 тонн');
+  await page.locator('#leadForm [name="consent"]').check();
+  await page.locator('#leadForm button[type="submit"]').click();
+
+  await expect(page.locator('#formStatus')).toContainText('Заявка отправлена');
+  const events = await page.evaluate(() => JSON.parse(localStorage.getItem('mm_events') || '[]'));
+  expect(events.some((event) => event.name === 'lead_success')).toBeTruthy();
+});
+
 test('мобильная версия не имеет горизонтальной прокрутки', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -68,4 +117,17 @@ test('мобильная версия не имеет горизонтально
 
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
   await expect(page.locator('.mobile-actions')).toBeVisible();
+});
+
+test('каталог не имеет горизонтальной прокрутки на 390 px', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/catalog/');
+
+  const dimensions = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth
+  }));
+
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+  await expect(page.locator('.mobile-bar')).toBeVisible();
 });
