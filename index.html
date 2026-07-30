@@ -25,6 +25,7 @@
       </a>
       <nav aria-label="Основное меню">
         <a href="#products">Продукция</a>
+        <a href="/uz/">Узбекистан</a>
         <a href="#air-delivery">Авиадоставка</a>
         <a href="#about">О компании</a>
         <a href="#contacts">Контакты</a>
@@ -42,7 +43,7 @@
           <h1>Единый поставщик материалов и комплектующих для промышленности</h1>
           <p class="hero-text">Металлопрокат, трубы, поковки, соединительные детали, арматура, цветные металлы и оборудование. Подберём позицию по спецификации и организуем доставку по РФ и СНГ.</p>
           <div class="hero-actions">
-            <a class="button" href="#request">Отправить спецификацию</a>
+            <a class="button" href="#request">Отправить заявку</a>
             <a class="button button-light" href="tel:+73517512335">Позвонить</a>
           </div>
           <div class="hero-facts" aria-label="Ключевые факты">
@@ -171,8 +172,8 @@
       <div class="shell request-layout">
         <div class="request-copy">
           <span class="kicker">Заявка на поставку</span>
-          <h2>Напишите, что требуется, или приложите файл</h2>
-          <p>Достаточно указать наименование, марку, размер и объём. Для авиадоставки добавьте город или аэропорт назначения и желаемый срок. Также можно отправить готовую спецификацию в PDF, Excel или Word.</p>
+          <h2>Напишите, что требуется</h2>
+          <p>Укажите продукцию, марку, размер, объём и город доставки в одном поле. Менеджер уточнит недостающие параметры и подготовит цену и срок поставки.</p>
           <div class="request-note">
             <b>Что будет дальше</b>
             <ol>
@@ -183,27 +184,14 @@
           </div>
         </div>
 
-        <form id="leadForm" name="lead" method="POST" data-netlify="true" netlify-honeypot="website" enctype="multipart/form-data" class="lead-form" novalidate>
+        <form id="leadForm" name="lead" method="POST" data-netlify="true" netlify-honeypot="website" class="lead-form" novalidate>
           <input type="hidden" name="form-name" value="lead" />
           <input type="hidden" name="source" id="sourceField" />
           <p class="hidden-field"><label>Не заполняйте это поле<input name="website" autocomplete="off" tabindex="-1" /></label></p>
 
-          <label class="field field-wide">
-            <span>Что требуется</span>
-            <textarea name="product" id="productField" placeholder="Например: лист 09Г2С 10×1500×6000 — 12 тонн. Доставка в Новый Уренгой"></textarea>
-          </label>
-
-          <label class="upload-box field-wide" for="fileField">
-            <input id="fileField" name="file" type="file" accept=".pdf,.xlsx,.xls,.docx,.doc,.csv,.jpg,.jpeg,.png" />
-            <span class="upload-icon">＋</span>
-            <span><b id="fileLabel">Приложить спецификацию</b><small>PDF, Excel, Word или изображение — до 8 МБ</small></span>
-          </label>
-
-          <label class="field"><span>Ваше имя*</span><input name="name" required autocomplete="name" /></label>
-          <label class="field"><span>Телефон*</span><input name="phone" required inputmode="tel" autocomplete="tel" placeholder="+7 ___ ___-__-__" /></label>
-          <label class="field"><span>E-mail</span><input name="email" type="email" autocomplete="email" /></label>
-          <label class="field"><span>Компания</span><input name="company" autocomplete="organization" /></label>
-          <label class="field field-wide"><span>Город / страна</span><input name="city" autocomplete="address-level2" /></label>
+          <label class="field field-wide"><span>Имя</span><input name="name" required autocomplete="name" placeholder="Как к вам обращаться" /></label>
+          <label class="field field-wide"><span>Телефон или e-mail</span><input name="contact" required autocomplete="tel" placeholder="+7 … или name@company.ru" /></label>
+          <label class="field field-wide"><span>Заявка / комментарий</span><textarea name="request" id="requestField" required placeholder="Например: лист 09Г2С 10×1500×6000 — 12 тонн, доставка в Ташкент"></textarea></label>
 
           <label class="consent field-wide">
             <input id="consentCheckbox" name="consent" type="checkbox" required />
@@ -223,10 +211,13 @@
           <h2>Свяжитесь с нами удобным способом</h2>
         </div>
         <div class="contact-card">
-          <span>Телефон</span>
+          <span>Телефоны</span>
           <a href="tel:+73517512335">+7 (351) 751-23-35</a>
           <a href="tel:+73517512454">+7 (351) 751-24-54</a>
+          <a href="tel:+79222307751">+7 (922) 230-77-51</a>
+          <a href="tel:+79220199063">+7 (922) 019-90-63</a>
           <a href="tel:+79227117363">+7 (922) 711-73-63</a>
+          <a href="tel:+79642440831">+7 (964) 244-08-31</a>
         </div>
         <div class="contact-card">
           <span>E-mail и офис</span>
