@@ -6,49 +6,6 @@
     document.head.appendChild(catalogStyles);
   }
 
-  const industryPages = [
-    ['Машиностроение и ремонт', 'mashinostroenie-remont.html'],
-    ['Энергетика и котельные', 'energetika-kotelnye.html'],
-    ['Нефтегаз и химия', 'neftegaz-himiya.html'],
-    ['Металлоконструкции', 'metallokonstrukcii.html'],
-    ['Электротехника и цветные металлы', 'elektrotehnika-cvetnye-metally.html']
-  ];
-
-  const pathParts = location.pathname.split('/').filter(Boolean);
-  const fileName = pathParts.at(-1) || '';
-  const inUzFolder = pathParts.includes('uz');
-  const relativePrefix = inUzFolder && pathParts.length > 2 ? '../' : '';
-  const industryBase = location.pathname.includes('/uz/uz/') ? '../' : '';
-
-  document.querySelectorAll('.uz-nav nav').forEach((nav) => {
-    if (!nav.querySelector('a[href*="otrasli.html"]')) {
-      const link = document.createElement('a');
-      link.href = `${industryBase}otrasli.html`;
-      link.textContent = 'Отрасли';
-      nav.insertBefore(link, nav.querySelector('a[href*="#request"],a[href*="catalog"]') || null);
-    }
-  });
-
-  const industryFileNames = new Set(['otrasli.html', ...industryPages.map(([, href]) => href)]);
-  if (document.body.dataset.market === 'UZ' && !industryFileNames.has(fileName)) {
-    const requestSection = document.querySelector('#request');
-    if (requestSection && !document.querySelector('.js-industry-links')) {
-      const section = document.createElement('section');
-      section.className = 'uz-section uz-priority js-industry-links';
-      section.innerHTML = `
-        <div class="uz-shell">
-          <div class="uz-heading">
-            <div><p class="uz-kicker">Решения по отраслям</p><h2>Выберите задачу вашего предприятия</h2></div>
-            <a href="${industryBase}otrasli.html">Все отрасли →</a>
-          </div>
-          <div class="uz-catalog-grid">
-            ${industryPages.map(([title, href]) => `<article><h3>${title}</h3><p>Продукция, типовые параметры заявки и связанные разделы каталога.</p><a href="${industryBase}${href}">Открыть решение →</a></article>`).join('')}
-          </div>
-        </div>`;
-      requestSection.before(section);
-    }
-  }
-
   const forms = [...document.querySelectorAll('.uz-lead-form')];
   const params = new URLSearchParams(location.search);
   const isUzbek = document.documentElement.lang.toLowerCase().startsWith('uz');
@@ -154,10 +111,6 @@
       event.preventDefault();
       fillRequest(node.dataset.product || node.textContent.trim());
     });
-  });
-
-  document.querySelectorAll('.js-industry-links a, a[href*="otrasli.html"], a[href*="mashinostroenie-remont"], a[href*="energetika-kotelnye"], a[href*="neftegaz-himiya"], a[href*="metallokonstrukcii"], a[href*="elektrotehnika-cvetnye-metally"]').forEach((link) => {
-    link.addEventListener('click', () => track('industry_link_click', { href: link.getAttribute('href'), text: link.textContent.trim() }));
   });
 
   document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
