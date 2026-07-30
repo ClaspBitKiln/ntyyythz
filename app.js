@@ -1,9 +1,7 @@
 const form = document.querySelector('#leadForm');
 const statusNode = document.querySelector('#formStatus');
 const submitButton = form?.querySelector('button[type="submit"]');
-const productField = document.querySelector('#productField');
-const fileField = document.querySelector('#fileField');
-const fileLabel = document.querySelector('#fileLabel');
+const requestField = document.querySelector('#requestField');
 const sourceField = document.querySelector('#sourceField');
 
 function uuid() {
@@ -23,6 +21,7 @@ localStorage.setItem('mm_session_id', sessionId);
 
 const attribution = {
   sessionId,
+  market: 'RU_CIS',
   utm_source: params.get('utm_source') || previous.utm_source || null,
   utm_medium: params.get('utm_medium') || previous.utm_medium || null,
   utm_campaign: params.get('utm_campaign') || previous.utm_campaign || null,
@@ -31,7 +30,11 @@ const attribution = {
   yclid: params.get('yclid') || previous.yclid || null,
   gclid: params.get('gclid') || previous.gclid || null,
   referrer: previous.referrer || document.referrer || null,
-  landingPage: previous.landingPage || location.href
+  landingPage: previous.landingPage || location.href,
+  currentPage: location.href,
+  pageTitle: document.title,
+  browserLanguage: navigator.language || null,
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null
 };
 
 localStorage.setItem('mm_attribution', JSON.stringify(attribution));
@@ -41,6 +44,7 @@ function track(name, data = {}) {
   const payload = {
     name,
     data,
+    market: attribution.market,
     path: location.pathname,
     time: new Date().toISOString(),
     sessionId
@@ -82,54 +86,28 @@ document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
 
 form?.addEventListener('focusin', () => track('form_start'), { once: true });
 
-fileField?.addEventListener('change', () => {
-  const file = fileField.files?.[0];
-  if (!file) {
-    if (fileLabel) fileLabel.textContent = 'Приложить спецификацию';
-    return;
-  }
-
-  if (file.size > 8 * 1024 * 1024) {
-    fileField.value = '';
-    if (fileLabel) fileLabel.textContent = 'Приложить спецификацию';
-    setStatus('Размер файла превышает 8 МБ.', 'error');
-    return;
-  }
-
-  if (fileLabel) fileLabel.textContent = file.name;
-  setStatus('');
-  track('file_upload', { extension: file.name.split('.').pop()?.toLowerCase() || '' });
-});
-
 form?.addEventListener('submit', async (event) => {
   event.preventDefault();
   setStatus('');
 
   const name = form.elements.namedItem('name');
-  const phone = form.elements.namedItem('phone');
-  const email = form.elements.namedItem('email');
+  const contact = form.elements.namedItem('contact');
+  const request = form.elements.namedItem('request');
   const consent = form.elements.namedItem('consent');
-  const file = fileField?.files?.[0];
-  const hasDescription = Boolean(productField?.value.trim());
 
   if (!name?.value.trim()) {
     setStatus('Укажите имя.', 'error');
     name?.focus();
     return;
   }
-  if (!phone?.value.trim()) {
-    setStatus('Укажите телефон.', 'error');
-    phone?.focus();
+  if (!contact?.value.trim()) {
+    setStatus('Укажите телефон или e-mail.', 'error');
+    contact?.focus();
     return;
   }
-  if (email?.value && !email.checkValidity()) {
-    setStatus('Проверьте адрес электронной почты.', 'error');
-    email.focus();
-    return;
-  }
-  if (!hasDescription && !file) {
-    setStatus('Напишите, что требуется, или приложите файл.', 'error');
-    productField?.focus();
+  if (!request?.value.trim()) {
+    setStatus('Напишите, какая продукция требуется.', 'error');
+    request?.focus();
     return;
   }
   if (!consent?.checked) {
@@ -142,14 +120,13 @@ form?.addEventListener('submit', async (event) => {
   formData.set('form-name', 'lead');
   formData.set('externalLeadId', uuid());
   formData.set('submittedAt', new Date().toISOString());
-  formData.set('source', JSON.stringify(attribution));
+  formData.set('source', JSON.stringify({ ...attribution, currentPage: location.href }));
+  formData.set('pageTitle', document.title);
 
   setBusy(true);
   setStatus('Отправляем заявку…');
   track('lead_submit', {
-    hasFile: Boolean(file),
-    hasDescription,
-    product: productField?.value.trim().slice(0, 120) || ''
+    request: request.value.trim().slice(0, 160)
   });
 
   try {
@@ -162,9 +139,8 @@ form?.addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(`FORM_${response.status}`);
 
     form.reset();
-    if (fileLabel) fileLabel.textContent = 'Приложить спецификацию';
     if (sourceField) sourceField.value = JSON.stringify(attribution);
-    setStatus('Заявка отправлена. Менеджер свяжется с вами в течение рабочего дня.', 'success');
+    setStatus('Заявка отправлена. Менеджер подготовит цену и срок поставки.', 'success');
     track('lead_success');
   } catch (error) {
     console.warn('Form submission failed', error);
