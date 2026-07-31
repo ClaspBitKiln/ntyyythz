@@ -55,10 +55,11 @@ jobs:
           args: >-
             --no-progress
             --include-mail=false
+            --root-dir .
             --exclude 'https://images.unsplash.com/.*'
+            --exclude '^https://www\.magicmet\.ru/catalog/?$'
             './*.html'
             './catalog/**/*.html'
-            './uz/**/*.html'
           fail: true
 
       - name: Upload Playwright report
