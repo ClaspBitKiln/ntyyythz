@@ -45,10 +45,23 @@ window.MM_CONFIG = Object.freeze({
     });
   };
 
+  const loadApprovedMobileFix = () => {
+    if (!document.querySelector('.slice-top') || document.querySelector('link[data-mm-approved-mobile]')) return;
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = '/approved-mobile.css';
+    style.dataset.mmApprovedMobile = 'true';
+    document.head.append(style);
+  };
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', applyContactEmail, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+      applyContactEmail();
+      loadApprovedMobileFix();
+    }, { once: true });
   } else {
     applyContactEmail();
+    loadApprovedMobileFix();
   }
 
   if (!current || document.querySelector('script[data-mm-site-shell]')) return;
