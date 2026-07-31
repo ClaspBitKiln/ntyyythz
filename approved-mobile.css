@@ -1,0 +1,8 @@
+@media (max-width:430px){
+  .lead-overlay{display:block!important;left:48.8%!important;top:31%!important;width:42.5%!important;height:40%!important;padding:2.2%!important}
+  .lead-overlay input,.lead-overlay textarea{font-size:7px!important}
+  .lead-overlay button{font-size:7px!important}
+  .consent{font-size:5px!important;gap:3px!important}
+  .consent input{width:7px!important;height:7px!important}
+  .form-status{font-size:6px!important;bottom:-15px!important}
+}
