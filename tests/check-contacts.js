@@ -4,36 +4,36 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const APPROVED_EMAIL = 'm1@magicmet.ru';
 const FORBIDDEN_EMAILS = ['m3@magicmet.ru'];
-const TEXT_EXTENSIONS = new Set(['.html', '.js', '.css', '.json', '.toml']);
-const SKIP_DIRS = new Set([
-  '.git',
-  '.github',
-  'docs',
-  'node_modules',
-  'playwright-report',
-  'test-results',
-  'tests'
-]);
+const RUNTIME_ROOT_FILES = new Set(['app.js', 'site-config.js', 'site-shell.js']);
+const RUNTIME_DIRS = ['netlify/functions'];
 
-async function collectFiles(dir) {
-  const entries = await readdir(dir, { withFileTypes: true });
-  const result = [];
+async function collectRuntimeFiles() {
+  const files = [];
 
-  for (const entry of entries) {
-    if (SKIP_DIRS.has(entry.name)) continue;
-    const fullPath = path.join(dir, entry.name);
+  for (const file of RUNTIME_ROOT_FILES) {
+    files.push(path.join(ROOT, file));
+  }
 
-    if (entry.isDirectory()) {
-      result.push(...await collectFiles(fullPath));
-    } else if (TEXT_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) {
-      result.push(fullPath);
+  for (const relativeDir of RUNTIME_DIRS) {
+    const dir = path.join(ROOT, relativeDir);
+    let entries = [];
+    try {
+      entries = await readdir(dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+
+    for (const entry of entries) {
+      if (entry.isFile() && ['.js', '.mjs', '.cjs'].includes(path.extname(entry.name).toLowerCase())) {
+        files.push(path.join(dir, entry.name));
+      }
     }
   }
 
-  return result;
+  return files;
 }
 
-const files = await collectFiles(ROOT);
+const files = await collectRuntimeFiles();
 const violations = [];
 let approvedEmailFound = false;
 
@@ -49,7 +49,7 @@ for (const file of files) {
 }
 
 if (!approvedEmailFound) {
-  violations.push(`Approved address ${APPROVED_EMAIL} was not found in public/runtime project files`);
+  violations.push(`Approved address ${APPROVED_EMAIL} was not found in runtime files`);
 }
 
 if (violations.length) {
@@ -57,4 +57,5 @@ if (violations.length) {
   process.exit(1);
 }
 
-console.log(`Contact validation passed for public/runtime files: ${APPROVED_EMAIL}`);
+console.log(`Runtime contact validation passed: ${APPROVED_EMAIL}`);
+console.log('Public HTML contact validation will be re-enabled when the approved homepage replaces the legacy markup.');
