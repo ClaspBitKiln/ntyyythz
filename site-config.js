@@ -1,13 +1,13 @@
 window.MM_CONFIG = Object.freeze({
-  // После публикации SaaS укажите публичный HTTPS endpoint приёма лидов.
-  // Пример: https://app.magicmet.ru/api/public/v1/leads
-  saasLeadEndpoint: '',
+  // Заявки всегда идут на серверный адаптер сайта.
+  // SaaS URL и токен не должны попадать в браузер.
+  saasLeadEndpoint: '/api/leads',
 
-  // Необязательный endpoint для событий воронки.
-  // Пример: https://app.magicmet.ru/api/public/v1/events
+  // Необязательный публичный endpoint обезличенных событий воронки.
+  // Оставить пустым до отдельного подключения аналитики.
   saasEventEndpoint: '',
 
-  // Пока SaaS endpoint не указан, форма продолжает работать через Netlify Forms.
+  // Резервный канал Netlify Forms на время недоступности SaaS.
   formFallbackEndpoint: '/',
 
   // Стабильный идентификатор источника для CRM/SaaS.
