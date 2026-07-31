@@ -11,16 +11,15 @@ async function mockFormSubmission(page) {
   });
 }
 
-test('главная использует согласованный визуальный эталон', async ({ page }) => {
+test('главная содержит ключевой оффер и шесть товарных направлений', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle(/Мэджик Металл/);
-  await expect(page.locator('.slice-top')).toBeVisible();
-  await expect(page.locator('.slice-bottom')).toBeVisible();
-  const background = await page.locator('.slice-top').evaluate((el) => getComputedStyle(el).backgroundImage);
-  expect(background).toContain('approved-homepage.webp');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Единый поставщик');
+  await expect(page.locator('#products .product')).toHaveCount(6);
+  await expect(page.locator('#delivery')).toContainText('Доставка по РФ и СНГ');
 });
 
-test('блок опыта встроен между частями согласованного макета', async ({ page }) => {
+test('блок опыта присутствует и содержит четыре компетенции', async ({ page }) => {
   await page.goto('/#experience');
   await expect(page.getByRole('heading', { name: 'Опыт в промышленном снабжении' })).toBeVisible();
   await expect(page.locator('.proof')).toHaveCount(4);
@@ -35,8 +34,13 @@ test('публичный runtime использует m1 и не показыв�
   await expect(page.locator('a[href="mailto:m1@magicmet.ru"]')).toBeVisible();
 });
 
-test('форма содержит три основных пользовательских поля', async ({ page }) => {
-  await page.setViewportSize({ width: 941, height: 900 });
+test('основные CTA ведут к заявке и телефону', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('a[href="#request"]')).not.toHaveCount(0);
+  await expect(page.locator('a[href^="tel:+73517512335"]')).not.toHaveCount(0);
+});
+
+test('форма содержит обязательные пользовательские поля', async ({ page }) => {
   await page.goto('/#request');
   await expect(page.locator('#leadForm [name="name"]')).toBeVisible();
   await expect(page.locator('#leadForm [name="contact"]')).toBeVisible();
@@ -45,7 +49,6 @@ test('форма содержит три основных пользовател
 });
 
 test('заявка отправляется через общую воронку', async ({ page }) => {
-  await page.setViewportSize({ width: 941, height: 900 });
   await mockFormSubmission(page);
   await page.goto('/#request');
   await page.locator('#leadForm [name="name"]').fill('Тестовый клиент');
@@ -57,12 +60,11 @@ test('заявка отправляется через общую воронку
 });
 
 test('страница не имеет горизонтальной прокрутки', async ({ page }) => {
-  const viewports = [
+  for (const viewport of [
     { width: 1440, height: 900 },
     { width: 390, height: 844 },
     { width: 360, height: 800 }
-  ];
-  for (const viewport of viewports) {
+  ]) {
     await page.setViewportSize(viewport);
     await page.goto('/');
     const dimensions = await page.evaluate(() => ({
@@ -71,6 +73,13 @@ test('страница не имеет горизонтальной прокру
     }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
   }
+});
+
+test('контактный блок содержит офис и все основные телефоны', async ({ page }) => {
+  await page.goto('/#contacts');
+  await expect(page.locator('#contacts')).toContainText('ул. Гостевая, 3, офис 306');
+  await expect(page.locator('#contacts')).toContainText('+7 (351) 751-23-35');
+  await expect(page.locator('#contacts')).toContainText('+7 (964) 244-08-31');
 });
 
 test('каталог остаётся доступным по прямому адресу', async ({ page }) => {
