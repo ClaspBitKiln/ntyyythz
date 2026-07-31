@@ -25,9 +25,13 @@ test('поиск и выбранная товарная группа перед�
   await page.locator('#leadForm button[type="submit"]').click();
 
   await expect(page.locator('#formStatus')).toContainText('Заявка отправлена');
-  expect(submittedBody).toContain('leadPayload');
-  expect(submittedBody).toContain('journey');
-  expect(submittedBody).toContain('catalog_search');
-  expect(submittedBody).toContain('product_group_select');
-  expect(submittedBody).toContain('sheet-hot');
+
+  const payload = JSON.parse(submittedBody);
+  expect(payload.request?.text).toContain('09Г2С');
+  expect(payload.journey).toBeTruthy();
+  expect(payload.journey.recentEvents.some((event) => event.name === 'catalog_search')).toBeTruthy();
+  expect(payload.journey.recentEvents.some((event) => event.name === 'product_group_select')).toBeTruthy();
+  expect(payload.journey.recentEvents.some((event) => event.name === 'product_group_select' && event.data?.productGroupId === 'sheet-hot')).toBeTruthy();
+  expect(payload.journey.intent?.selectedProductGroups).toContain('Лист горячекатаный');
+  expect(payload.journey.intent?.searchQueries).toContain('09г2с');
 });
