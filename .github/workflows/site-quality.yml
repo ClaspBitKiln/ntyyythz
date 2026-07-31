@@ -54,7 +54,7 @@ jobs:
         with:
           args: >-
             --no-progress
-            --exclude-mail
+            --include-mail=false
             --exclude 'https://images.unsplash.com/.*'
             './*.html'
             './catalog/**/*.html'
