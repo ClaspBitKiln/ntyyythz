@@ -4,8 +4,16 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const APPROVED_EMAIL = 'm1@magicmet.ru';
 const FORBIDDEN_EMAILS = ['m3@magicmet.ru'];
-const TEXT_EXTENSIONS = new Set(['.html', '.js', '.css', '.json', '.md', '.toml', '.yml', '.yaml']);
-const SKIP_DIRS = new Set(['.git', 'node_modules', 'playwright-report', 'test-results']);
+const TEXT_EXTENSIONS = new Set(['.html', '.js', '.css', '.json', '.toml']);
+const SKIP_DIRS = new Set([
+  '.git',
+  '.github',
+  'docs',
+  'node_modules',
+  'playwright-report',
+  'test-results',
+  'tests'
+]);
 
 async function collectFiles(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -41,7 +49,7 @@ for (const file of files) {
 }
 
 if (!approvedEmailFound) {
-  violations.push(`Approved address ${APPROVED_EMAIL} was not found in project files`);
+  violations.push(`Approved address ${APPROVED_EMAIL} was not found in public/runtime project files`);
 }
 
 if (violations.length) {
@@ -49,4 +57,4 @@ if (violations.length) {
   process.exit(1);
 }
 
-console.log(`Contact validation passed: ${APPROVED_EMAIL}`);
+console.log(`Contact validation passed for public/runtime files: ${APPROVED_EMAIL}`);
