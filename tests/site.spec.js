@@ -70,6 +70,7 @@ test('заявка отправляется через общую воронку
 test('при ошибке LeadGateway заявка уходит в Netlify Forms с тем же externalLeadId', async ({ page }) => {
   let gatewayPayload;
   let fallbackBody = '';
+  let fallbackContentType = '';
 
   await page.route('**/*', async (route) => {
     const request = route.request();
@@ -84,6 +85,7 @@ test('при ошибке LeadGateway заявка уходит в Netlify Forms
     }
     if (request.method() === 'POST') {
       fallbackBody = request.postData() || '';
+      fallbackContentType = request.headers()['content-type'] || '';
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
       return;
     }
@@ -100,11 +102,12 @@ test('при ошибке LeadGateway заявка уходит в Netlify Forms
   await expect(page.locator('#formStatus')).toContainText('Заявка отправлена');
   expect(gatewayPayload.externalLeadId).toBeTruthy();
 
-  expect(fallbackBody).toContain('name="form-name"');
-  expect(fallbackBody).toContain('name="externalLeadId"');
-  expect(fallbackBody).toContain('name="leadPayload"');
-  expect(fallbackBody).toContain(gatewayPayload.externalLeadId);
-  expect(fallbackBody).toContain('magicmet-website');
+  expect(fallbackContentType).toContain('application/x-www-form-urlencoded');
+  const fallbackParams = new URLSearchParams(fallbackBody);
+  expect(fallbackParams.get('form-name')).toBe('lead');
+  expect(fallbackParams.get('externalLeadId')).toBe(gatewayPayload.externalLeadId);
+  expect(fallbackParams.get('leadPayload')).toContain(gatewayPayload.externalLeadId);
+  expect(fallbackParams.get('sourceSystem')).toBe('magicmet-website');
 });
 
 test('форма последовательно отклоняет заявку без обязательных данных', async ({ page }) => {
