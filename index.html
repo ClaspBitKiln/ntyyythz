@@ -85,7 +85,15 @@
       <div class="shell request-grid">
         <div class="request-copy"><span class="eyebrow" style="color:#9fc2ff">Получить расчёт</span><h2>Отправить заявку</h2><p>Пришлите позицию, спецификацию или комментарий. Менеджер уточнит параметры и подготовит предложение по цене, сроку и доставке.</p></div>
         <form id="leadForm" name="lead" method="POST" data-netlify="true" netlify-honeypot="website" class="lead-form" novalidate>
-          <input type="hidden" name="form-name" value="lead"><input type="hidden" name="source" id="sourceField"><label class="hidden-field">Не заполняйте<input name="website" autocomplete="off" tabindex="-1"></label>
+          <input type="hidden" name="form-name" value="lead">
+          <input type="hidden" name="source" id="sourceField">
+          <input type="hidden" name="externalLeadId">
+          <input type="hidden" name="submittedAt">
+          <input type="hidden" name="sourceSystem">
+          <input type="hidden" name="journey">
+          <input type="hidden" name="leadPayload">
+          <input type="hidden" name="pageTitle">
+          <label class="hidden-field">Не заполняйте<input name="website" autocomplete="off" tabindex="-1"></label>
           <input name="name" required autocomplete="name" placeholder="Имя" aria-label="Имя">
           <input name="contact" required placeholder="Телефон или e-mail" aria-label="Телефон или e-mail">
           <textarea name="request" id="requestField" required placeholder="Заявка / комментарий" aria-label="Заявка или комментарий"></textarea>
