@@ -54,6 +54,9 @@ test('форма содержит обязательные пользовате�
   await expect(page.locator('#leadForm [name="contact"]')).toBeVisible();
   await expect(page.locator('#leadForm [name="request"]')).toBeVisible();
   await expect(page.locator('#leadForm [name="consent"]')).toBeVisible();
+  for (const field of ['externalLeadId', 'submittedAt', 'sourceSystem', 'journey', 'leadPayload', 'pageTitle']) {
+    await expect(page.locator(`#leadForm input[type="hidden"][name="${field}"]`)).toHaveCount(1);
+  }
 });
 
 test('заявка отправляется через общую воронку', async ({ page }) => {
