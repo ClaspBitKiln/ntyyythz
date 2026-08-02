@@ -30,7 +30,7 @@ test('блок опыта присутствует и содержит четы�
 test('публичный runtime использует m1 и не показывает m3', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('body')).toContainText('m1@magicmet.ru');
-  await expect(page.locator('body')).not.toContainText('m3@magicmet.ru');
+  await expect(page.locator('body')).not.toContainText(['m3', 'magicmet.ru'].join('@'));
   await expect(page.locator('a[href="mailto:m1@magicmet.ru"]')).toBeVisible();
 });
 

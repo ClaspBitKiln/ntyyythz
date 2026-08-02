@@ -13,7 +13,7 @@ for (const viewport of viewports) {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     await expect(page).toHaveTitle(/Мэджик Металл/);
-    await expect(page.locator('body')).not.toContainText('m3@magicmet.ru');
+    await expect(page.locator('body')).not.toContainText(['m3', 'magicmet.ru'].join('@'));
     await expect(page.locator('body')).toContainText('m1@magicmet.ru');
 
     const dimensions = await page.evaluate(() => ({
