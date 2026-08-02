@@ -9,6 +9,7 @@ on:
       - 'app.js'
       - 'netlify/functions/lead.js'
       - 'netlify/functions/lead.mjs'
+      - 'netlify.toml'
       - 'package.json'
       - 'tests/lead-gateway.test.js'
       - 'tests/site.spec.js'
