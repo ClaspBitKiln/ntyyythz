@@ -2,7 +2,7 @@ name: site-quality
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, design-exact-approved]
   push:
     branches: [design-exact-approved]
   workflow_dispatch:
