@@ -74,8 +74,8 @@
       <p>${item.description}</p>
       <div class="product-tags">${item.tags.map((tag) => `<span>${tag}</span>`).join('')}</div>
       <div class="product-actions">
-        <a href="group.html?id=${encodeURIComponent(item.id)}" data-open-product="${item.id}">Подробнее</a>
-        <button type="button" data-select-product="${item.id}">Хочу купить →</button>
+        <a href="group.html?id=${encodeURIComponent(item.id)}" data-open-product="${item.id}" aria-label="Подробнее: ${item.name}">Подробнее</a>
+        <button type="button" data-select-product="${item.id}" aria-label="Запросить расчёт: ${item.name}">Хочу купить →</button>
       </div>
     </article>`;
   }
