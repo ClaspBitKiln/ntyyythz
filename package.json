@@ -7,6 +7,7 @@
     "serve": "serve . -l 4173 --no-clipboard",
     "validate:html": "html-validate \"*.html\" \"catalog/**/*.html\" \"uz/**/*.html\"",
     "check:js": "node --check app.js && node --check site-config.js && node --check site-shell.js && node --check catalog/catalog.js",
+    "test:gateway": "node --test tests/lead-gateway.test.js",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lighthouse": "lhci autorun",
