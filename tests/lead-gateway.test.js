@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { handler } from '../netlify/functions/lead.js';
 
@@ -216,4 +217,11 @@ describe('LeadGateway SaaS contract', () => {
       correlationId: 'nf-request-123'
     });
   });
+});
+
+test('Netlify protects the public lead route with an IP rate limit', async () => {
+  const config = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
+  assert.match(config, /from\s*=\s*"\/api\/leads"[\s\S]*?\[redirects\.rate_limit\][\s\S]*?window_limit\s*=\s*10/);
+  assert.match(config, /window_size\s*=\s*60/);
+  assert.match(config, /aggregate_by\s*=\s*\["ip",\s*"domain"\]/);
 });
