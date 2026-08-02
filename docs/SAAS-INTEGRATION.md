@@ -69,6 +69,6 @@ MVP требует имя, телефон или e-mail, текст заявки
 6. Lighthouse;
 7. реальная canary-заявка в Deploy Preview;
 8. подтверждение обязательных Netlify env;
-9. подтверждение rate limit/abuse-защиты публичного `/api/leads`.
+9. проверка в deploy log правила rate limit для `/api/leads`: 10 запросов за 60 секунд на IP+домен.
 
 Production и SaaS не изменяются из этой ветки.
