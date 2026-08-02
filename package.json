@@ -13,7 +13,8 @@
     "test:ci": "npm run check:js && npm run validate:html && npm run check:contacts && playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lighthouse": "lhci autorun",
-    "quality": "npm run test:ci && npm run lighthouse"
+    "quality": "npm run test:ci && npm run lighthouse",
+    "test:gateway": "node --test tests/lead-gateway.test.js"
   },
   "devDependencies": {
     "@lhci/cli": "^0.15.1",
