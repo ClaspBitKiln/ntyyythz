@@ -213,10 +213,18 @@ async function submitToFallback(formData, payload) {
   formData.set('leadPayload', JSON.stringify(payload));
   formData.set('pageTitle', document.title);
 
+  const encodedBody = new URLSearchParams();
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === 'string') encodedBody.append(key, value);
+  }
+
   const response = await fetch(config.formFallbackEndpoint || '/', {
     method: 'POST',
-    headers: { Accept: 'application/json' },
-    body: formData
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      Accept: 'application/json'
+    },
+    body: encodedBody.toString()
   });
 
   if (!response.ok) throw new Error(`FORM_${response.status}`);
