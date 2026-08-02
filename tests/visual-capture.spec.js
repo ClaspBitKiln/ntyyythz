@@ -30,6 +30,8 @@ test('главная страница совпадает с утверждённ
   await page.evaluate(() => document.fonts.ready);
 
   await expect(page).toHaveTitle(/Мэджик Металл/);
+  await expect(page.locator('body')).not.toContainText('m3@magicmet.ru');
+  await expect(page.locator('body')).toContainText('m1@magicmet.ru');
   await expect(page.locator('.hero-visual')).toBeVisible();
   await expect(page).toHaveScreenshot('homepage-full-page.png', {
     fullPage: true,
