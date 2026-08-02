@@ -7,7 +7,7 @@ Maintain a fast, reliable Russian-language company website that works as a busin
 - Company: ООО «Мэджик Металл».
 - Public office: 454004, г. Челябинск, ул. Гостевая, 3, офис 306.
 - There is no representative office in Saint Petersburg. Do not add Санкт-Петербург or СПб to pages, metadata, schema, or SEO text.
-- Main email: m3@magicmet.ru.
+- Main email: m1@magicmet.ru.
 - Main phone: +7 (351) 751-23-35.
 - Do not invent stock, delivery times, project experience, tonnage, certificates, warehouses, or offices.
 
@@ -16,7 +16,7 @@ Maintain a fast, reliable Russian-language company website that works as a busin
 - Hosting and form handling: Netlify.
 - Source control and CI: GitHub.
 - Future SaaS integration must go through a server-side function. Never expose SaaS tokens in browser code.
-- File upload limit for Netlify Forms is 8 MB.
+- The current MVP accepts a text request. File upload is postponed until storage, malware scanning, and the end-to-end attachment contract are approved.
 
 ## Required checks after changes
 Run:
@@ -30,10 +30,9 @@ npm run lighthouse
 ```
 
 ## Form requirements
-- A request is valid when the visitor supplies text or a file.
-- Name, phone, and consent are required.
+- A request is valid when the visitor supplies name, phone or e-mail, request text, and consent.
 - Preserve UTM, yclid, gclid, referrer, landing page, and anonymous session ID.
-- Keep the file field compatible with PDF, Excel, Word, CSV, JPG, and PNG.
+- Do not add a file field until the attachment workflow is approved and tested end to end.
 - Do not claim a form is working in production until a real submission appears in the Netlify dashboard or the SaaS lead inbox.
 
 ## Design rules
@@ -44,6 +43,6 @@ npm run lighthouse
 
 ## Tooling
 - Playwright MCP is declared in `.mcp.json` for browser inspection by compatible agents.
-- Playwright tests cover desktop, mobile, form text submission, and file-only submission.
+- Playwright tests cover desktop, mobile, form validation, text submission, Gateway fallback, and visual regression.
 - GitHub Actions validates HTML, runs browser tests, Lighthouse, and broken-link checks.
 - Dependabot maintains npm and GitHub Action versions weekly.
