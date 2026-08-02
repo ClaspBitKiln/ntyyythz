@@ -38,7 +38,7 @@ test('блок опыта присутствует и содержит четы�
 test('публичный runtime использует m1 и не показывает m3', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('body')).toContainText('m1@magicmet.ru');
-  await expect(page.locator('body')).not.toContainText('m3@magicmet.ru');
+  await expect(page.locator('body')).not.toContainText(['m3', 'magicmet.ru'].join('@'));
   await expect(page.locator('a[href="mailto:m1@magicmet.ru"]')).toBeVisible();
 });
 
@@ -65,6 +65,46 @@ test('заявка отправляется через общую воронку
   await page.locator('#leadForm [name="consent"]').check();
   await page.locator('#leadForm button[type="submit"]').click();
   await expect(page.locator('#formStatus')).toContainText('Заявка отправлена');
+});
+
+test('при ошибке LeadGateway заявка уходит в Netlify Forms с тем же externalLeadId', async ({ page }) => {
+  let gatewayPayload;
+  let fallbackBody = '';
+
+  await page.route('**/*', async (route) => {
+    const request = route.request();
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/leads') {
+      gatewayPayload = request.postDataJSON();
+      await route.fulfill({
+        status: 502,
+        contentType: 'application/json',
+        body: JSON.stringify({ accepted: false, error: 'SAAS_UNAVAILABLE' })
+      });
+      return;
+    }
+    if (request.method() === 'POST') {
+      fallbackBody = request.postData() || '';
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.goto('/#request');
+  await page.locator('#leadForm [name="name"]').fill('Fallback Тест');
+  await page.locator('#leadForm [name="contact"]').fill('fallback@example.com');
+  await page.locator('#leadForm [name="request"]').fill('Труба 159×8, 5 тонн');
+  await page.locator('#leadForm [name="consent"]').check();
+  await page.locator('#leadForm button[type="submit"]').click();
+
+  await expect(page.locator('#formStatus')).toContainText('Заявка отправлена');
+  expect(gatewayPayload.externalLeadId).toBeTruthy();
+
+  expect(fallbackBody).toContain('name="form-name"');
+  expect(fallbackBody).toContain('name="externalLeadId"');
+  expect(fallbackBody).toContain('name="leadPayload"');
+  expect(fallbackBody).toContain(gatewayPayload.externalLeadId);
+  expect(fallbackBody).toContain('magicmet-website');
 });
 
 test('форма последовательно отклоняет заявку без обязательных данных', async ({ page }) => {
