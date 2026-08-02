@@ -7,7 +7,7 @@ Maintain a fast, reliable Russian-language company website that works as a busin
 - Company: ООО «Мэджик Металл».
 - Public office: 454004, г. Челябинск, ул. Гостевая, 3, офис 306.
 - There is no representative office in Saint Petersburg. Do not add Санкт-Петербург or СПб to pages, metadata, schema, or SEO text.
-- Main email: m3@magicmet.ru.
+- Main email: m1@magicmet.ru.
 - Main phone: +7 (351) 751-23-35.
 - Do not invent stock, delivery times, project experience, tonnage, certificates, warehouses, or offices.
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Мэджик Металл — единый поставщик для промышленности</title>
-  <meta name="description" content="Более 2000 позиций продукции: металлопрокат, трубы, поковки, СДТ, арматура, цветные металлы, оборудование и нестандартные комплектующие с доставкой по РФ и СНГ.">
+  <meta name="description" content="Комплексные поставки металлопроката, труб, поковок, СДТ, арматуры, цветных металлов, оборудования и нестандартных комплектующих по РФ и СНГ.">
   <link rel="canonical" href="https://www.magicmet.ru/">
   <meta name="theme-color" content="#082f8c">
   <style>
@@ -24,9 +24,9 @@
 <body>
   <header>
     <div class="shell nav">
-      <a class="brand" href="#top"><span class="brand-mark">ММ</span><span>Мэджик Металл</span></a>
+      <a class="brand" href="#top" aria-label="Мэджик Металл — на главную"><span class="brand-mark" aria-hidden="true">ММ</span><span>Мэджик Металл</span></a>
       <nav aria-label="Основное меню"><a href="#products">Продукция</a><a href="#delivery">Доставка</a><a href="#experience">О компании</a><a href="#contacts">Контакты</a></nav>
-      <a class="phone" href="tel:+73517512335">+7 (351) 751-23-35</a>
+      <a class="phone" href="tel:+73517512335" aria-label="Позвонить в Мэджик Металл: +7 351 751-23-35">+7 (351) 751-23-35</a>
       <a class="button" href="#request">Отправить заявку</a>
     </div>
   </header>
@@ -35,9 +35,9 @@
     <section class="hero">
       <div class="shell hero-grid">
         <div>
-          <div class="hero-badge"><span class="flag"></span>Надёжный поставщик для вашего бизнеса</div>
+          <div class="hero-badge"><span class="flag" aria-hidden="true"></span>Надёжный поставщик для вашего бизнеса</div>
           <h1>Единый поставщик материалов и комплектующих для промышленности</h1>
-          <p>Более 2000 позиций продукции. Металлопрокат, трубы, поковки, СДТ, арматура, цветные металлы, оборудование и нестандартные комплектующие с доставкой по РФ и СНГ.</p>
+          <p>Комплексные поставки металлопроката, труб, поковок, СДТ, арматуры, цветных металлов, оборудования и нестандартных комплектующих по РФ и СНГ.</p>
           <div class="hero-actions"><a class="button" href="#request">Отправить заявку</a><a class="button alt" href="tel:+73517512335">Позвонить</a></div>
         </div>
         <div class="hero-visual" role="img" aria-label="Промышленное предприятие и металлопродукция"><div class="hero-card">МЭДЖИК МЕТАЛЛ<br>Надёжность. Качество. Партнёрство.</div></div>
@@ -86,9 +86,9 @@
         <div class="request-copy"><span class="eyebrow" style="color:#9fc2ff">Получить расчёт</span><h2>Отправить заявку</h2><p>Пришлите позицию, спецификацию или комментарий. Менеджер уточнит параметры и подготовит предложение по цене, сроку и доставке.</p></div>
         <form id="leadForm" name="lead" method="POST" data-netlify="true" netlify-honeypot="website" class="lead-form" novalidate>
           <input type="hidden" name="form-name" value="lead"><input type="hidden" name="source" id="sourceField"><label class="hidden-field">Не заполняйте<input name="website" autocomplete="off" tabindex="-1"></label>
-          <input name="name" required autocomplete="name" placeholder="Имя">
-          <input name="contact" required placeholder="Телефон или e-mail">
-          <textarea name="request" id="requestField" required placeholder="Заявка / комментарий"></textarea>
+          <input name="name" required autocomplete="name" placeholder="Имя" aria-label="Имя">
+          <input name="contact" required placeholder="Телефон или e-mail" aria-label="Телефон или e-mail">
+          <textarea name="request" id="requestField" required placeholder="Заявка / комментарий" aria-label="Заявка или комментарий"></textarea>
           <label class="consent"><input id="consentCheckbox" name="consent" type="checkbox" required><span>Согласен на обработку персональных данных согласно политике конфиденциальности.</span></label>
           <button class="button" type="submit">Отправить заявку</button><p id="formStatus" class="form-status" role="status" aria-live="polite"></p>
         </form>
