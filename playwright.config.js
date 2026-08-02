@@ -9,6 +9,11 @@ export default defineConfig({
   reporter: process.env.CI ? [['html', { open: 'never' }], ['list']] : 'list',
   use: {
     baseURL: 'http://127.0.0.1:4173',
+    locale: 'ru-RU',
+    timezoneId: 'Europe/Moscow',
+    colorScheme: 'light',
+    reducedMotion: 'reduce',
+    deviceScaleFactor: 1,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'
@@ -20,7 +25,21 @@ export default defineConfig({
     timeout: 120000
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] } }
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        deviceScaleFactor: 1
+      }
+    },
+    {
+      name: 'mobile-chrome',
+      use: {
+        ...devices['Pixel 7'],
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 1
+      }
+    }
   ]
 });

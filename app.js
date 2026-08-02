@@ -233,7 +233,7 @@ document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
   link.addEventListener('click', () => track('email_click', { email: link.textContent.trim() }));
 });
 
-document.querySelectorAll('.product-card').forEach((card) => {
+document.querySelectorAll('.product-card, .product').forEach((card) => {
   card.addEventListener('click', () => {
     track('product_group_view', { productGroup: card.querySelector('h3')?.textContent?.trim() || null });
   });
@@ -305,7 +305,7 @@ form?.addEventListener('submit', async (event) => {
     track('lead_success', { externalLeadId, channel: result.channel });
   } catch (error) {
     console.warn('Lead submission failed', error);
-    setStatus('Не удалось отправить заявку. Позвоните по телефону +7 (351) 751-23-35 или напишите на m3@magicmet.ru.', 'error');
+    setStatus('Не удалось отправить заявку. Позвоните по телефону +7 (351) 751-23-35 или напишите на m1@magicmet.ru.', 'error');
     track('lead_error', { externalLeadId, message: error.message });
   } finally {
     setBusy(false);

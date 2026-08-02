@@ -7,10 +7,14 @@
     "serve": "serve . -l 4173 --no-clipboard",
     "validate:html": "html-validate \"*.html\" \"catalog/**/*.html\" \"uz/**/*.html\"",
     "check:js": "node --check app.js && node --check site-config.js && node --check site-shell.js && node --check catalog/catalog.js",
-    "test:e2e": "playwright test",
+    "check:contacts": "node tests/check-contacts.js",
+    "test:e2e": "playwright test tests/site.spec.js",
+    "test:visual:capture": "playwright test tests/visual-capture.spec.js",
+    "test:ci": "npm run check:js && npm run validate:html && npm run check:contacts && playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lighthouse": "lhci autorun",
-    "quality": "npm run check:js && npm run validate:html && npm run test:e2e && npm run lighthouse"
+    "quality": "npm run test:ci && npm run lighthouse",
+    "test:gateway": "node --test tests/lead-gateway.test.js"
   },
   "devDependencies": {
     "@lhci/cli": "^0.15.1",
