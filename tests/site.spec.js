@@ -11,6 +11,14 @@ async function mockFormSubmission(page) {
   });
 }
 
+async function expectNoHorizontalOverflow(page) {
+  const dimensions = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+}
+
 test('главная содержит ключевой оффер и шесть товарных направлений', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle(/Мэджик Металл/);
@@ -59,6 +67,36 @@ test('заявка отправляется через общую воронку
   await expect(page.locator('#formStatus')).toContainText('Заявка отправлена');
 });
 
+test('форма последовательно отклоняет заявку без обязательных данных', async ({ page }) => {
+  await page.goto('/#request');
+  const form = page.locator('#leadForm');
+
+  await form.locator('button[type="submit"]').click();
+  await expect(page.locator('#formStatus')).toHaveText('Укажите имя.');
+
+  await form.locator('[name="name"]').fill('Тестовый клиент');
+  await form.locator('button[type="submit"]').click();
+  await expect(page.locator('#formStatus')).toHaveText('Укажите телефон или e-mail.');
+
+  await form.locator('[name="contact"]').fill('+7 900 000-00-00');
+  await form.locator('button[type="submit"]').click();
+  await expect(page.locator('#formStatus')).toHaveText('Напишите, какая продукция требуется.');
+
+  await form.locator('[name="request"]').fill('Лист 09Г2С, требуется расчёт');
+  await form.locator('button[type="submit"]').click();
+  await expect(page.locator('#formStatus')).toHaveText('Подтвердите согласие на обработку персональных данных.');
+});
+
+test('клик по товарному направлению сохраняется в journey', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#products .product').first().click();
+
+  const events = await page.evaluate(() => JSON.parse(localStorage.getItem('mm_events') || '[]'));
+  expect(events.some((event) => (
+    event.name === 'product_group_view' && event.data?.productGroup === 'Листовой прокат'
+  ))).toBeTruthy();
+});
+
 test('страница не имеет горизонтальной прокрутки', async ({ page }) => {
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -67,12 +105,12 @@ test('страница не имеет горизонтальной прокру
   ]) {
     await page.setViewportSize(viewport);
     await page.goto('/');
-    const dimensions = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      clientWidth: document.documentElement.clientWidth
-    }));
-    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+    await expectNoHorizontalOverflow(page);
   }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/catalog/');
+  await expectNoHorizontalOverflow(page);
 });
 
 test('контактный блок содержит офис и все основные телефоны', async ({ page }) => {
@@ -82,8 +120,13 @@ test('контактный блок содержит офис и все осно
   await expect(page.locator('#contacts')).toContainText('+7 (964) 244-08-31');
 });
 
-test('каталог остаётся доступным по прямому адресу', async ({ page }) => {
-  await page.goto('/catalog/');
+test('каталог доступен с origin главной страницы', async ({ page }) => {
+  await page.goto('/');
+  const catalogUrl = new URL('/catalog/', page.url()).toString();
+  const response = await page.request.get(catalogUrl);
+  expect(response.ok()).toBeTruthy();
+
+  await page.goto(catalogUrl);
   await expect(page).toHaveTitle(/Каталог/);
   await expect(page.locator('.product-card')).toHaveCount(22);
 });
