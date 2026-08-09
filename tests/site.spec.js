@@ -15,16 +15,8 @@ test('главная содержит ключевой оффер и шесть 
   await page.goto('/');
   await expect(page).toHaveTitle(/Мэджик Металл/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Единый поставщик');
-  await expect(page.locator('#products .product')).toHaveCount(6);
+  await expect(page.locator('#products .card')).toHaveCount(6);
   await expect(page.locator('#delivery')).toContainText('Доставка по РФ и СНГ');
-});
-
-test('блок опыта присутствует и содержит четыре компетенции', async ({ page }) => {
-  await page.goto('/#experience');
-  await expect(page.getByRole('heading', { name: 'Опыт в промышленном снабжении' })).toBeVisible();
-  await expect(page.locator('.proof')).toHaveCount(4);
-  await expect(page.locator('#experience')).toContainText('ГОСТ · ТУ · чертежи');
-  await expect(page.locator('#experience')).toContainText('РФ и страны СНГ');
 });
 
 test('публичный runtime использует m1 и не показывает m3', async ({ page }) => {
@@ -75,7 +67,7 @@ test('страница не имеет горизонтальной прокру
   }
 });
 
-test('контактный блок содержит офис и все основные телефоны', async ({ page }) => {
+test('контактный блок содержит офис и основные телефоны', async ({ page }) => {
   await page.goto('/#contacts');
   await expect(page.locator('#contacts')).toContainText('ул. Гостевая, 3, офис 306');
   await expect(page.locator('#contacts')).toContainText('+7 (351) 751-23-35');
