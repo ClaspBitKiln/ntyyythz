@@ -238,7 +238,7 @@ select:focus-visible {
   background: var(--navy);
   border-radius: 3px;
   box-shadow: 0 7px 20px rgba(7, 28, 98, 0.18);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -675,7 +675,7 @@ h2 {
   max-width: 480px;
   margin: 30px 0;
   color: #dbe6ff;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.7;
 }
 .request-copy > a {
