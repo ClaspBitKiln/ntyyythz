@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   description: 'Комплектные поставки электросварных и бесшовных труб, СДТ, труб и фасонных изделий в изоляции, специальных сталей и металлопроката.',
   openGraph: {
     title: 'Мэджик Металл — комплексные поставки металла',
-    description: 'Разбираем спецификацию и комплектуем поставку для сложных промышленных задач.',
-    images: ['/images/hero-approved.webp'],
+    description: 'Находим редкие и нестандартные позиции, проверяем ГОСТ, ТУ и документы, комплектуем поставки металла для промышленности.',
+    images: ['/images/hero-mercedes-v5.webp'],
     locale: 'ru_RU',
     type: 'website',
   },
@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const organizationJsonLd = {
     '@context': 'https://schema.org', '@type': 'Organization', name: 'ООО «Мэджик Металл»', url: 'https://magicmet.ru',
-    email: 'm1@magicmet.ru', telephone: '+7 922 711-73-63', logo: 'https://magicmet.ru/images/logo.png',
+    email: 'm1@magicmet.ru', telephone: '+7 922 711-73-63', logo: 'https://magicmet.ru/images/logo-hq.webp',
     areaServed: ['Россия', 'СНГ', 'Узбекистан'],
     knowsAbout: ['электросварные трубы', 'бесшовные трубы', 'соединительные детали трубопроводов', 'металлопрокат', 'нержавеющие стали', 'цветные металлы'],
   }
