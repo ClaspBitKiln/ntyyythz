@@ -233,7 +233,7 @@ document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
   link.addEventListener('click', () => track('email_click', { email: link.textContent.trim() }));
 });
 
-document.querySelectorAll('.product-card').forEach((card) => {
+document.querySelectorAll('.product-card, .product').forEach((card) => {
   card.addEventListener('click', () => {
     track('product_group_view', { productGroup: card.querySelector('h3')?.textContent?.trim() || null });
   });
